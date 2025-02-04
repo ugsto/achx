@@ -1,4 +1,4 @@
 import { writable } from 'svelte/store';
 
-export const isAuthenticatedStore = writable(false);
-export const tokenStore = writable<string | undefined>(undefined);
+export const isAuthenticated = writable(false);
+export const token = writable<string | undefined>(undefined);

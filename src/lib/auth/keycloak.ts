@@ -7,7 +7,13 @@ import {
 	PUBLIC_KEYCLOAK_TOKEN_TTL
 } from '$env/static/public';
 import Keycloak from 'keycloak-js';
-import { isAuthenticatedStore, tokenStore } from './keycloak-store';
+import { isAuthenticated, token } from './keycloak-store';
+import {
+	KeycloakInitializationError,
+	KeycloakTokenRefreshError,
+	KeycloakLoginError,
+	KeycloakLogoutError
+} from '$lib/auth/keycloak-exceptions';
 
 let tokenRefreshInterval: ReturnType<typeof setInterval> | undefined = undefined;
 
@@ -30,13 +36,11 @@ export async function initAuth() {
 			silentCheckSsoRedirectUri: `${location.origin}/silent-check-sso.html`
 		});
 	} catch (error) {
-		console.error('Keycloak initialization error:', error);
+		throw new KeycloakInitializationError();
 	}
 
-	const isAuthenticated = keycloak.authenticated ?? false;
-
-	isAuthenticatedStore.set(isAuthenticated);
-	tokenStore.set(keycloak.token);
+	isAuthenticated.set(keycloak.authenticated ?? false);
+	token.set(keycloak.token);
 
 	if (isAuthenticated) {
 		startTokenRefresh();
@@ -53,10 +57,10 @@ function startTokenRefresh() {
 		}
 		try {
 			await keycloak.updateToken(tokenTtl);
-			tokenStore.set(keycloak.token);
+			token.set(keycloak.token);
 		} catch (error) {
-			console.error('Failed to refresh token', error);
-			logout();
+			stopTokenRefresh();
+			throw new KeycloakTokenRefreshError();
 		}
 	}, refreshInterval * 1000);
 }
@@ -73,20 +77,22 @@ export async function login() {
 	try {
 		await keycloak.login();
 	} catch (error) {
-		console.error('Login failed:', error);
-		return;
+		throw new KeycloakLoginError();
 	}
-	isAuthenticatedStore.set(true);
-	tokenStore.set(keycloak.token);
+	isAuthenticated.set(true);
+	token.set(keycloak.token);
+}
+
+export async function register() {
+	await keycloak.register();
 }
 
 export async function logout() {
 	try {
 		await keycloak.logout();
 	} catch (error) {
-		console.error('Logout failed:', error);
-		return;
+		throw new KeycloakLogoutError();
 	}
-	isAuthenticatedStore.set(false);
-	tokenStore.set(undefined);
+	isAuthenticated.set(false);
+	token.set(undefined);
 }

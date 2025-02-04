@@ -1,0 +1,51 @@
+@use 'tailwindcss/base';
+@use 'tailwindcss/components';
+@use 'tailwindcss/utilities';
+
+$colors: (
+	'amber',
+	'blue',
+	'bronze',
+	'brown',
+	'crimson',
+	'cyan',
+	'gold',
+	'grass',
+	'gray',
+	'green',
+	'indigo',
+	'iris',
+	'jade',
+	'lime',
+	'mauve',
+	'mint',
+	'olive',
+	'orange',
+	'pink',
+	'plum',
+	'purple',
+	'red',
+	'ruby',
+	'sage',
+	'sand',
+	'sky',
+	'slate',
+	'teal',
+	'tomato',
+	'violet',
+	'yellow'
+);
+
+@each $color in $colors {
+	.focus-ring-#{$color} {
+		@apply focus:ring-#{$color}-7 focus:outline-none focus:ring-2;
+	}
+
+	.neon-button-#{$color} {
+		@apply border-#{$color}-4 hover:border-#{$color}-3 text-#{$color}-12 focus-ring-#{$color} h-10 rounded-md border font-medium transition-all duration-300 ease-in-out;
+	}
+
+	.neon-button-#{$color}-filled {
+		@apply bg-#{$color}-4 hover:bg-#{$color}-3 text-#{$color}-12 focus-ring-#{$color} h-10 rounded-md font-medium transition-all duration-300 ease-in-out;
+	}
+}
